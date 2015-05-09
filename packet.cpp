@@ -1,5 +1,7 @@
 #include "packet.h"
 
+#include <arpa/inet.h>
+
 #include <cstring>
 #include <cstdio>
 
@@ -7,7 +9,7 @@
 
 using namespace std;
 
-Packet::Packet(unsigned char *buffer, int sz) : _size(sz)
+Packet::Packet(byte *buffer, int sz) : _size(sz)
 {
     if (_size <= 0 || !buffer)
     {
@@ -23,46 +25,60 @@ Packet::Packet(unsigned char *buffer, int sz) : _size(sz)
 
     memcpy(_buffer, buffer, _size);
 
-    _hdr = reinterpret_cast<ethhdr*>(buffer);
+    _eth = reinterpret_cast<ethhdr*>(buffer);
     _iph = reinterpret_cast<iphdr*>(_buffer + sizeof(ethhdr));
+
+    if (getEthernetProtocol() == IP)
+    {
+        getIp();
+    }
 }
 
 
-int Packet::getSize()
+int Packet::getPacketSize() const
 {
     return _size;
 }
 
-int Packet::getProtocol()
+unsigned int Packet::getIPSize() const
+{
+    return _iph->ihl * 4;
+}
+
+int Packet::getProtocol() const
 {
     return _iph->protocol;
 }
 
+int Packet::getEthernetProtocol() const
+{
+    return _eth->h_proto;
+}
 
-int Packet::getIPVersion()
+
+int Packet::getIPVersion() const
 {
     return _iph->version;
 }
 
-string Packet::getSourceMac()
+string Packet::getSourceMac() const
 {
     char str[30];
-    strcpy(str, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X");
-    int n = sprintf(str, eth->h_dest[0], eth->h_dest[1],
-            eth->h_dest[2], eth->h_dest[3], eth->h_dest[4],
-            eth->h_dest[5]);
+    //strcpy(str, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X");
+    int n = sprintf(str, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X", _eth->h_dest[0], _eth->h_dest[1],
+            _eth->h_dest[2], _eth->h_dest[3], _eth->h_dest[4],
+            _eth->h_dest[5]);
     str[n] = 0;
     return str;
 }
 
 
-string Packet::getDestMac()
+string Packet::getDestMac() const
 {
     char str[30];
-    strcpy(str, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X");
-    int n = sprintf(str, eth->h_source[0], eth->h_source[1],
-            eth->h_source[2], eth->h_source[3],
-            eth->h_source[4], eth->h_source[5]);
+    int n = sprintf(str, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",_eth->h_source[0], _eth->h_source[1],
+            _eth->h_source[2], _eth->h_source[3],
+            _eth->h_source[4], _eth->h_source[5]);
     str[n] = 0;
     return str;
 }
@@ -73,7 +89,32 @@ Packet::~Packet()
 }
 
 
-int Packet::getSize() const
+string Packet::getSourceIP() const
 {
-    return _size;
+    return _sip;
 }
+
+
+string Packet::getDestIP() const
+{
+    return _dip;
+}
+
+void Packet::getIp()
+{
+    in_addr source, dest;
+    source.s_addr = _iph->saddr;
+    dest.s_addr = _iph->daddr;
+    _dip = inet_ntoa(dest);
+    _sip = inet_ntoa(source);
+}
+
+
+
+
+
+
+
+
+
+

@@ -3,9 +3,12 @@
 
 #include <string>
 #include <memory>
+#include <iostream>
 
 #include<netinet/ip.h>
 #include<net/ethernet.h>
+
+typedef unsigned char byte;
 
 class Packet
 {
@@ -13,13 +16,18 @@ public:
 
     typedef std::shared_ptr<Packet> Ptr;
 
-    Packet(unsigned char *buffer, int sz);
+    enum {
+        IP = 8
+    };
+
+    Packet(byte *buffer, int sz);
 
     virtual ~Packet();
 
-    virtual int getSize() const;
+    virtual int getPacketSize() const;
+    virtual unsigned int getIPSize() const;
     virtual int getProtocol() const;
-    virtual int getIPProtocol() const;
+    virtual int getEthernetProtocol() const;
     virtual std::string getDestMac() const;
     virtual std::string getSourceMac() const;
     virtual int getIPVersion() const;
@@ -30,8 +38,12 @@ public:
 protected:
     unsigned char *_buffer;
     int _size;
-    ethhdr *_hdr;
+    ethhdr *_eth;
     iphdr *_iph;
+    std::string _sip, _dip;
+
+private:
+    void getIp();
 };
 
 

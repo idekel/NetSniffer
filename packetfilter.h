@@ -2,10 +2,13 @@
 #define PACKETFILTER_H
 
 #include <memory>
+#include <mutex>
+
+#include <Poco/Runnable.h>
 
 #include "packet.h"
 
-class PacketFilter
+class PacketFilter : Poco::Runnable
 {
 public:
 
@@ -20,8 +23,11 @@ public:
     PacketFilter();
     ~PacketFilter();
 
+    void run() override;
+
 private:
-    std::shared_ptr<Packet> _packet;
+    static PacketFilter *_instance;
+    static long _tcp, _udp, _icmp, _igmp, _other;
 };
 
 #endif // PACKETFILTER_H
