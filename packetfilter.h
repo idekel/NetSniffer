@@ -4,11 +4,12 @@
 #include <memory>
 #include <mutex>
 
+#include <Poco/NotificationQueue.h>
 #include <Poco/Runnable.h>
 
 #include "packet.h"
 
-class PacketFilter : Poco::Runnable
+class PacketFilter : public Poco::Runnable
 {
 public:
 
@@ -23,10 +24,11 @@ public:
     PacketFilter();
     ~PacketFilter();
 
+    void print();
+
     void run() override;
 
 private:
-    static PacketFilter *_instance;
     static long _tcp, _udp, _icmp, _igmp, _other;
 };
 

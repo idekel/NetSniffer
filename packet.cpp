@@ -6,8 +6,12 @@
 #include <cstdio>
 
 #include <Poco/Exception.h>
+#include <Poco/JSON/Object.h>
 
 using namespace std;
+using namespace Poco;
+using namespace MongoDB;
+using namespace JSON;
 
 Packet::Packet(byte *buffer, int sz) : _size(sz)
 {
@@ -81,6 +85,35 @@ string Packet::getDestMac() const
             _eth->h_source[4], _eth->h_source[5]);
     str[n] = 0;
     return str;
+}
+
+
+void Packet::savePacket(std::shared_ptr<InsertRequest> &request)
+{
+    Document &doc = request->addNewDocument();
+    doc.add("destination_adresss", getDestMac());
+    doc.add("source_address", getSourceMac());
+    doc.add("ethernet_protocol", getEthernetProtocol());
+    doc.add("ip_version", getIPVersion());
+    doc.add("packet_size", getPacketSize());
+    doc.add("dest_ip", getDestIP());
+    doc.add("source_ip", getDestIP());
+}
+
+ostream& Packet::writePacket(ostream &os)
+{
+    Object obj;
+    obj.set("destination_adresss", getDestMac());
+    obj.set("source_address", getSourceMac());
+    obj.set("ethernet_protocol", getEthernetProtocol());
+    obj.set("ip_version", getIPVersion());
+    obj.set("packet_size", getPacketSize());
+    obj.set("dest_ip", getDestIP());
+    obj.set("source_ip", getDestIP());
+
+    obj.stringify(os);
+
+    return os;
 }
 
 Packet::~Packet()

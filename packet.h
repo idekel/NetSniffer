@@ -8,13 +8,16 @@
 #include<netinet/ip.h>
 #include<net/ethernet.h>
 
+#include <Poco/Notification.h>
+#include <Poco/MongoDB/InsertRequest.h>
+
 typedef unsigned char byte;
 
-class Packet
+class Packet : public Poco::Notification
 {
 public:
 
-    typedef std::shared_ptr<Packet> Ptr;
+    typedef Poco::AutoPtr<Packet> Ptr;
 
     enum {
         IP = 8
@@ -34,6 +37,8 @@ public:
     virtual std::string getSourceIP() const;
     virtual std::string getDestIP() const;
 
+    virtual std::ostream& writePacket(std::ostream &os);
+    virtual void savePacket(std::shared_ptr<Poco::MongoDB::InsertRequest> &request);
 
 protected:
     unsigned char *_buffer;
