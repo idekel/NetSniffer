@@ -29,14 +29,17 @@ PacketFilter::~PacketFilter()
 void PacketFilter::run()
 {
     auto &app = static_cast<NetSniffer&>(NetSniffer::instance());
+    NetSniffer::setThreadName("Packet Filter");
     try {
 
         auto &queue = app.getPacketQueue();
 
         while(!app.stop())
         {
-            Packet::Ptr ptr(static_cast<Packet*>(queue.waitDequeueNotification()));
-            if (ptr){
+            auto tmp = queue.waitDequeueNotification();
+            if (tmp){
+                Packet::Ptr ptr(static_cast<Packet*>(tmp));
+
                 switch (ptr->getProtocol()) //Check the Protocol and do accordingly...
                 {
                 case ICMP:  //ICMP Protocol
@@ -66,8 +69,8 @@ void PacketFilter::run()
         }
 
     }
-    catch (...) {
-
+    catch (exception &e) {
+        cerr << e.what() << endl;
     }
 }
 

@@ -1,8 +1,11 @@
 #include "netsniffer.h"
 #include "packetfilter.h"
 #include "packetlistner.h"
+#include "storer.h"
 
 #include <fstream>
+
+#include <sys/prctl.h>
 
 #include <Poco/ThreadPool.h>
 
@@ -23,25 +26,32 @@ NetSniffer::~NetSniffer()
 void NetSniffer::initialize(Poco::Util::Application &self)
 {
     ServerApplication::initialize(self);
+    loadConfiguration();
 }
 
 
 int NetSniffer::main(const std::vector<std::string> &args)
 {
 
-    PacketListner listener;
-    PacketFilter filter;
+    try {
 
-    ThreadPool::defaultPool().start(listener, "Packet Listener");
-    ThreadPool::defaultPool().start(filter, "Packet Filter");
+        Storer store;
 
-    waitForTerminationRequest();
+        PacketListner listener;
+        PacketFilter filter;
 
-    _stop = true;
+        ThreadPool::defaultPool().start(listener, "Packet Listener");
+        ThreadPool::defaultPool().start(filter, "Packet Filter");
 
-    _packetQueue.wakeUpAll();
+        waitForTerminationRequest();
 
+        _stop = true;
 
+        _packetQueue.wakeUpAll();
+
+    }catch (exception &e){
+        cerr << e.what() << endl;
+    }
 
     return EXIT_OK;
 }
@@ -57,16 +67,12 @@ NotificationQueue& NetSniffer::getPacketQueue()
 }
 
 
-void NetSniffer::setThreadName(int tid, const string &name)
-{
-    string file("/proc/self/task/");
-    file += to_string(tid) + "/comm";
-
-    fstream of(file, fstream::out);
-
-    if (of.is_open())
+void NetSniffer::setThreadName(const string &name)
+{    
+    if (prctl(PR_SET_NAME, name.c_str()))
     {
-        of << name;
+        cerr << "error: " << strerror(errno) << endl;
+        exit(1);
     }
 }
 

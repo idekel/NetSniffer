@@ -19,7 +19,7 @@ public:
     Poco::NotificationQueue& getPacketQueue();
 
     //for cool thread name
-    static void setThreadName(int tid, const std::string &name);
+    static void setThreadName(const std::string &name);
 
 private:
     Poco::NotificationQueue _packetQueue;
