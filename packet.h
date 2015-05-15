@@ -37,8 +37,11 @@ public:
     virtual std::string getSourceIP() const;
     virtual std::string getDestIP() const;
 
+    Poco::Int32 getRawDestIp() const;
+    Poco::Int32 getRawSourceIp() const;
+
     virtual std::ostream& writePacket(std::ostream &os);
-    virtual void savePacket(std::shared_ptr<Poco::MongoDB::InsertRequest> &request);
+    virtual void savePacket(Poco::MongoDB::Document &doc);
 
 protected:
     unsigned char *_buffer;

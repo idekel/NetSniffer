@@ -1,5 +1,9 @@
 #include "storer.h"
 #include "createcollection.h"
+#include "netsniffer.h"
+#include "packet.h"
+
+#include <Poco/MongoDB/Database.h>
 
 using namespace std;
 using namespace Poco::Util;
@@ -39,6 +43,28 @@ void Storer::createCollection()
 
 void Storer::run()
 {
+    auto &app = static_cast<NetSniffer&>(NetSniffer::instance());
+    auto &queue = app.getStorePacketQueue();
+    NetSniffer::setThreadName("Storer");
+    try
+    {
+        Database db(_config.getString("db"));
+        auto collName = _config.getString("collection");
+        while(!app.stop())
+        {
+            auto tmp = queue.waitDequeueNotification();
+            if (tmp)
+            {
+                Packet::Ptr packet = static_cast<Packet*>(tmp);
+                auto request = db.createInsertRequest(collName);
+                packet->savePacket(request->addNewDocument());
+                _con.sendRequest(*request);
+            }
+        }
+    }
+    catch (exception &e)
+    {
 
+    }
 }
 

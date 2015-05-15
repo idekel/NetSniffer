@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <mutex>
+#include <map>
 
 #include <Poco/NotificationQueue.h>
 #include <Poco/Runnable.h>
@@ -27,9 +28,12 @@ public:
     void print();
 
     void run() override;
+    void packetCounter(Packet::Ptr ptr);
 
 private:
     static long _tcp, _udp, _icmp, _igmp, _other;
+    std::map<Poco::Int32, Poco::Int64> _packetIP;
+    std::map<Poco::Int32, Poco::Int64> _packetPort;
 };
 
 #endif // PACKETFILTER_H

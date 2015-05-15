@@ -68,7 +68,6 @@ int Packet::getIPVersion() const
 string Packet::getSourceMac() const
 {
     char str[30];
-    //strcpy(str, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X");
     int n = sprintf(str, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X", _eth->h_dest[0], _eth->h_dest[1],
             _eth->h_dest[2], _eth->h_dest[3], _eth->h_dest[4],
             _eth->h_dest[5]);
@@ -88,16 +87,16 @@ string Packet::getDestMac() const
 }
 
 
-void Packet::savePacket(std::shared_ptr<InsertRequest> &request)
+void Packet::savePacket(Document &doc)
 {
-    Document &doc = request->addNewDocument();
     doc.add("destination_adresss", getDestMac());
     doc.add("source_address", getSourceMac());
     doc.add("ethernet_protocol", getEthernetProtocol());
+    doc.add("protocol", getProtocol());
     doc.add("ip_version", getIPVersion());
     doc.add("packet_size", getPacketSize());
-    doc.add("dest_ip", getDestIP());
-    doc.add("source_ip", getDestIP());
+    doc.add("dest_ip", getRawDestIp());
+    doc.add("source_ip", getRawSourceIp());
 }
 
 ostream& Packet::writePacket(ostream &os)
@@ -131,6 +130,16 @@ string Packet::getSourceIP() const
 string Packet::getDestIP() const
 {
     return _dip;
+}
+
+Poco::Int32 Packet::getRawDestIp() const
+{
+    return _iph->saddr;
+}
+
+Poco::Int32 Packet::getRawSourceIp() const
+{
+    return _iph->daddr;
 }
 
 void Packet::getIp()

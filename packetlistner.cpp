@@ -1,6 +1,7 @@
 #include "packetlistner.h"
 #include "netsniffer.h"
-
+#include "packetfilter.h"
+#include "tcppacket.h"
 
 using namespace std;
 using namespace Poco;
@@ -21,7 +22,10 @@ PacketListner::~PacketListner()
 void PacketListner::run()
 {
     auto &app = static_cast<NetSniffer&>(NetSniffer::instance());
+    //main queue
     auto &queue = app.getPacketQueue();
+    //queue for the storer
+    auto &storeQueue = app.getStorePacketQueue();
     NetSniffer::setThreadName("Packet Listener");
     try {
         auto de = app.config().getString("interface", "wlan0");
@@ -33,13 +37,17 @@ void PacketListner::run()
         {
             int sz = _socket.impl()->receiveBytes(_buffer, BUFSIZE);
             if (sz){
-                Notification::Ptr work = new Packet(_buffer, sz);
+                //Notification::Ptr work = new Packet(_buffer, sz);
+                auto work = getPacket(_buffer, sz);
+                if (work->getDestIP() == "127.0.0.1")
+                    continue;
                 queue.enqueueNotification(work);
+                storeQueue.enqueueNotification(work);
             }
         }
     }
 
-    //when the app is signal for termination this exceptio
+    //when the app is signal for termination this exception
     //is thown
     catch (InvalidArgumentException &ie) {
         //cerr << ie.what() << endl;
@@ -50,3 +58,15 @@ void PacketListner::run()
     }
 }
 
+
+Packet::Ptr PacketListner::getPacket(byte *buf, int sz)
+{
+    auto iph = reinterpret_cast<iphdr*>(_buffer + sizeof(ethhdr));
+
+    if (iph->protocol == PacketFilter::TCP)
+    {
+        return new TCPPacket(buf, sz);
+    }
+
+    return new Packet(buf, sz);
+}

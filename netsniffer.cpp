@@ -42,6 +42,7 @@ int NetSniffer::main(const std::vector<std::string> &args)
 
         ThreadPool::defaultPool().start(listener, "Packet Listener");
         ThreadPool::defaultPool().start(filter, "Packet Filter");
+        ThreadPool::defaultPool().start(store, "Storer");
 
         waitForTerminationRequest();
 
@@ -66,6 +67,10 @@ NotificationQueue& NetSniffer::getPacketQueue()
     return _packetQueue;
 }
 
+NotificationQueue& NetSniffer::getStorePacketQueue()
+{
+    return  _storePacket;
+}
 
 void NetSniffer::setThreadName(const string &name)
 {    

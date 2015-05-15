@@ -14,6 +14,8 @@ public:
 
     void run() override;
 
+    Packet::Ptr getPacket(byte *buf, int sz);
+
     static int BUFSIZE;
 
 private:

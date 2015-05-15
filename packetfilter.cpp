@@ -62,8 +62,9 @@ void PacketFilter::run()
                     ++_other;
                     break;
                 }
-            }
 
+                packetCounter(ptr);
+            }            
             //for testing porpos
             print();
         }
@@ -75,12 +76,43 @@ void PacketFilter::run()
 }
 
 
+void PacketFilter::packetCounter(Packet::Ptr ptr)
+{
+    auto dip = ptr->getRawDestIp();
+    auto sip = ptr->getRawSourceIp();
+
+    //check if ips are there
+    //to ensure proper initilization
+    if (_packetIP.find(dip) == _packetIP.end())
+    {
+        _packetIP[dip] = 0;
+    }
+
+    if (_packetIP.find(sip) == _packetIP.end())
+    {
+        _packetIP[sip] = 0;
+    }
+
+    _packetIP[dip] += 1;
+    _packetIP[sip] += 1;
+
+}
+
 
 void PacketFilter::print()
 {
-    string format = "TCP : %d   UDP : %d   ICMP : %d    "
-                    "IGMP : %d   Others : %d\r";
-    printf(format.c_str(), _tcp, _udp, _icmp, _igmp, _other);
+    //string format = "TCP : %d   UDP : %d   ICMP : %d    "
+    //                "IGMP : %d   Others : %d\r";
+    //printf(format.c_str(), _tcp, _udp, _icmp, _igmp, _other);
+
+    printf("\033[2J"); // Clear screen
+
+    for (auto &it : _packetIP)
+    {
+        in_addr ip;
+        ip.s_addr = it.first;
+        cout << inet_ntoa(ip) << ": " << it.second << endl;
+    }
 }
 
 
