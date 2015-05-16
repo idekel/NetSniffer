@@ -37,8 +37,17 @@ public:
     virtual std::string getSourceIP() const;
     virtual std::string getDestIP() const;
 
-    Poco::Int32 getRawDestIp() const;
-    Poco::Int32 getRawSourceIp() const;
+    /**
+     * @brief getRawDestIp raw ip in host byte order.
+     * @return
+     */
+    Poco::UInt32 getRawDestIp() const;
+
+    /**
+     * @brief getRawSourceIp raw ip in host byte order.
+     * @return
+     */
+    Poco::UInt32 getRawSourceIp() const;
 
     virtual std::ostream& writePacket(std::ostream &os);
     virtual void savePacket(Poco::MongoDB::Document &doc);

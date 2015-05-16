@@ -95,8 +95,8 @@ void Packet::savePacket(Document &doc)
     doc.add("protocol", getProtocol());
     doc.add("ip_version", getIPVersion());
     doc.add("packet_size", getPacketSize());
-    doc.add("dest_ip", getRawDestIp());
-    doc.add("source_ip", getRawSourceIp());
+    doc.add("dest_ip", (Int64)getRawDestIp());
+    doc.add("source_ip", (Int64)getRawSourceIp());
 }
 
 ostream& Packet::writePacket(ostream &os)
@@ -132,14 +132,14 @@ string Packet::getDestIP() const
     return _dip;
 }
 
-Poco::Int32 Packet::getRawDestIp() const
+UInt32 Packet::getRawDestIp() const
 {
-    return _iph->saddr;
+    return ntohl(_iph->saddr);
 }
 
-Poco::Int32 Packet::getRawSourceIp() const
+UInt32 Packet::getRawSourceIp() const
 {
-    return _iph->daddr;
+    return ntohl(_iph->daddr);
 }
 
 void Packet::getIp()
