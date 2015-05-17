@@ -6,6 +6,7 @@
 #include <Poco/Types.h>
 
 #include "tcppacket.h"
+#include "udppacket.h"
 
 class Stats
 {
@@ -16,6 +17,7 @@ public:
 
     Stats& count(Packet::Ptr ptr);
     void count(TCPPacket *ptr);
+    void count(UDPPacket *ptr);
 
     struct Conversation
     {

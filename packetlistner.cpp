@@ -2,6 +2,7 @@
 #include "netsniffer.h"
 #include "packetfilter.h"
 #include "tcppacket.h"
+#include "udppacket.h"
 
 using namespace std;
 using namespace Poco;
@@ -66,6 +67,10 @@ Packet::Ptr PacketListner::getPacket(byte *buf, int sz)
     if (iph->protocol == PacketFilter::TCP)
     {
         return new TCPPacket(buf, sz);
+
+    } else if (iph->protocol == PacketFilter::UDP)
+    {
+        return new UDPPacket(_buffer, sz);
     }
 
     return new Packet(buf, sz);

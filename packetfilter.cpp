@@ -3,6 +3,8 @@
 
 #include <stdexcept>
 
+#include <arpa/inet.h>
+
 using namespace std;
 using namespace Poco;
 

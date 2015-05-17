@@ -3,18 +3,17 @@
 #include "netsniffer.h"
 #include "packet.h"
 
-#include <Poco/MongoDB/Database.h>
+#include <fstream>
+
+#include <Poco/File.h>
 
 using namespace std;
-using namespace Poco::Util;
-using namespace Poco::MongoDB;
+using namespace Poco;
+using namespace Util;
 
 Storer::Storer() : _config(Application::instance().config())
 {
-    auto host = _config.getString("host");
-    auto port = _config.getInt("port");
-    _con.connect(host, port);
-    createCollection();
+    _pcapFile = _config.getString("pcap_file");
 }
 
 Storer::~Storer()
@@ -22,7 +21,7 @@ Storer::~Storer()
 
 }
 
-void Storer::createCollection()
+/*void Storer::createCollection()
 {
     auto db = _config.getString("db");
     auto collName = _config.getString("collection");
@@ -37,9 +36,45 @@ void Storer::createCollection()
         Document::Ptr doc = docs[0];
         cout << doc->toString() << endl;
     }
+}*/
+
+bool Storer::init()
+{
+    File file(_pcapFile);
+
+    if (!file.exists())
+    {
+        if (!file.createFile())
+        {
+            return false;
+        }
+    }
+
+    if (file.getSize() == 0)
+    {
+        return initFile();
+    }
+
+    return true;
 }
 
+bool Storer::initFile()
+{
+    fstream file(_pcapFile, fstream::out);
+    if (!file.is_open())
+    {
+        return false;
+    }
 
+    PcapHdr hd;
+
+    BinaryWriter os(file);
+    hd.write(os);
+
+    file.flush();
+
+    return true;
+}
 
 void Storer::run()
 {
@@ -48,23 +83,36 @@ void Storer::run()
     NetSniffer::setThreadName("Storer");
     try
     {
-        Database db(_config.getString("db"));
-        auto collName = _config.getString("collection");
+
+        if (!init())
+        {
+            throw RuntimeException("could open/create the capture file");
+        }
+
+        fstream file(_pcapFile, fstream::app | fstream::binary);
+
+        if (!file.is_open())
+        {
+            throw RuntimeException("could open/create the capture file");
+        }
+
+        BinaryWriter writer(file);
+
         while(!app.stop())
         {
             auto tmp = queue.waitDequeueNotification();
             if (tmp)
             {
                 Packet::Ptr packet = static_cast<Packet*>(tmp);
-                auto request = db.createInsertRequest(collName);
-                packet->savePacket(request->addNewDocument());
-                _con.sendRequest(*request);
+                packet->writePacket(writer);
+                file.flush();
             }
         }
     }
     catch (exception &e)
     {
-
+        app.logger().fatal(e.what());
     }
+
 }
 

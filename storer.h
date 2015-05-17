@@ -14,11 +14,13 @@ public:
     void run() override;
 
 private:
-    Poco::MongoDB::Connection _con;
     Poco::Util::LayeredConfiguration &_config;
+    std::string _pcapFile;
 
+    bool init();
+    bool initFile();
 
-    void createCollection();
+    //void createCollection();
 };
 
 #endif // STORER_H

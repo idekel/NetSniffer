@@ -10,10 +10,23 @@
 
 using namespace std;
 using namespace Poco;
-using namespace MongoDB;
 using namespace JSON;
 
 Packet::Packet(byte *buffer, int sz) : _size(sz)
+{
+    init(buffer);
+}
+
+
+Packet::Packet(byte *buffer, int sz, Timestamp::TimeVal t)
+    : _size(sz),
+      _time(t)
+{
+    init(buffer);
+}
+
+
+void Packet::init(byte *buffer)
 {
     if (_size <= 0 || !buffer)
     {
@@ -37,7 +50,6 @@ Packet::Packet(byte *buffer, int sz) : _size(sz)
         getIp();
     }
 }
-
 
 int Packet::getPacketSize() const
 {
@@ -87,30 +99,22 @@ string Packet::getDestMac() const
 }
 
 
-void Packet::savePacket(Document &doc)
+BinaryWriter &Packet::writePacket(BinaryWriter &os)
 {
-    doc.add("destination_adresss", getDestMac());
-    doc.add("source_address", getSourceMac());
-    doc.add("ethernet_protocol", getEthernetProtocol());
-    doc.add("protocol", getProtocol());
-    doc.add("ip_version", getIPVersion());
-    doc.add("packet_size", getPacketSize());
-    doc.add("dest_ip", (Int64)getRawDestIp());
-    doc.add("source_ip", (Int64)getRawSourceIp());
-}
+    PCapHd phd;
 
-ostream& Packet::writePacket(ostream &os)
-{
-    Object obj;
-    obj.set("destination_adresss", getDestMac());
-    obj.set("source_address", getSourceMac());
-    obj.set("ethernet_protocol", getEthernetProtocol());
-    obj.set("ip_version", getIPVersion());
-    obj.set("packet_size", getPacketSize());
-    obj.set("dest_ip", getDestIP());
-    obj.set("source_ip", getDestIP());
+    int bytes_tostore = 125;
+    phd.ts_sec = _time.epochTime();
+    UInt32 usec = _time.epochMicroseconds() - (phd.ts_sec * 1000000);
+    phd.ts_usec = usec;
+    phd.incl_len = bytes_tostore;
+    phd.orig_len = getPacketSize();
 
-    obj.stringify(os);
+    phd.write(os);
+
+    os.writeRaw((char*)_buffer, bytes_tostore);
+
+    os.flush();
 
     return os;
 }

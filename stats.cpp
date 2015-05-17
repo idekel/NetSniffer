@@ -36,13 +36,20 @@ Stats& Stats::count(Packet::Ptr ptr)
 
     } else if (prot == PacketFilter::UDP)
     {
-
+        count(static_cast<UDPPacket*>(ptr.get()));
     }
 
 }
 
 
 void Stats::count(TCPPacket *ptr)
+{
+    auto psize = ptr->getPacketSize();
+    _ports[ptr->getRawDestIp()] += psize;
+    _ports[ptr->getRawSourceIp()] += psize;
+}
+
+void Stats::count(UDPPacket *ptr)
 {
     auto psize = ptr->getPacketSize();
     _ports[ptr->getRawDestIp()] += psize;

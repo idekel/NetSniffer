@@ -11,8 +11,6 @@ public:
 
     TCPPacket(byte *buffer, int size);
 
-    void savePacket(Poco::MongoDB::Document &doc) override;
-
     int getSourcePort() const;
     int getDestPort() const;
 
