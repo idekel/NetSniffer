@@ -10,10 +10,15 @@
 class Filter
 {
 public:
-    Filter();
-    Filter(Poco::JSON::Object &conf);
+    Filter(const std::string name);
+    Filter(const std::string &name, Poco::JSON::Object::Ptr conf);
 
     ~Filter();
+
+    Poco::UInt32 getMask(Poco::UInt32 bits)
+    {
+        return ~(~UInt32(0) >> bits);
+    }
 
 private:
     Stats _stats;

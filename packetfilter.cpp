@@ -2,6 +2,7 @@
 #include "netsniffer.h"
 
 #include <stdexcept>
+#include <fstream>
 
 #include <arpa/inet.h>
 
@@ -56,6 +57,11 @@ void PacketFilter::getFilters()
         auto tmp = result.extract<Object::Ptr>();
         Object &ret = *tmp;
 
+        for (pair<const std::string, Var> &it : ret)
+        {
+            Filter filter(it.first, it.second.extract<Object::Ptr>());
+            _filters.push_back(filter);
+        }
 
     } else
     {
