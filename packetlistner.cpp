@@ -38,7 +38,6 @@ void PacketListner::run()
         {
             int sz = _socket.impl()->receiveBytes(_buffer, BUFSIZE);
             if (sz){
-                //Notification::Ptr work = new Packet(_buffer, sz);
                 auto work = getPacket(_buffer, sz);
                 if (work->getDestIP() == "127.0.0.1")
                     continue;

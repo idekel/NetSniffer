@@ -9,6 +9,7 @@
 #include <Poco/Runnable.h>
 
 #include "packet.h"
+#include "stats.h"
 
 class PacketFilter : public Poco::Runnable
 {
@@ -26,14 +27,15 @@ public:
     ~PacketFilter();
 
     void print();
+    void getFilters();
 
     void run() override;
     void packetCounter(Packet::Ptr ptr);
 
 private:
     static long _tcp, _udp, _icmp, _igmp, _other;
-    std::map<Poco::Int64, Poco::Int64> _packetIP;
-    std::map<Poco::Int32, Poco::Int64> _packetPort;
+    std::map<Poco::Int64, Stats::Counter> _packetIP;
+
 };
 
 #endif // PACKETFILTER_H

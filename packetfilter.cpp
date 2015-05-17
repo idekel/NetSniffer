@@ -5,8 +5,16 @@
 
 #include <arpa/inet.h>
 
+#include <Poco/JSON/Parser.h>
+#include <Poco/JSON/Object.h>
+#include <Poco/Dynamic/Var.h>
+#include <Poco/File.h>
+
+
 using namespace std;
 using namespace Poco;
+using namespace JSON;
+using Dynamic::Var;
 
 
 long PacketFilter::_icmp = 0;
@@ -19,13 +27,40 @@ long PacketFilter::_other = 0;
 
 PacketFilter::PacketFilter()
 {
-
+    getFilters();
 }
 
 
 PacketFilter::~PacketFilter()
 {
 
+}
+
+
+void PacketFilter::getFilters()
+{
+    auto &config = Util::Application::instance().config();
+    auto filename = config.getString("filters", "");
+    if (!filename.empty())
+    {
+        File file(filename);
+        if (!file.exists())
+        {
+            throw FileNotFoundException("fileter config file not found");
+        }
+
+        fstream os(filename);
+
+        Parser parser;
+        Var result = parser.parse(os);
+        auto tmp = result.extract<Object::Ptr>();
+        Object &ret = *tmp;
+
+
+    } else
+    {
+
+    }
 }
 
 void PacketFilter::run()
@@ -66,7 +101,7 @@ void PacketFilter::run()
                 }
 
                 packetCounter(ptr);
-            }            
+            }
             //for testing porpos
             print();
         }
@@ -82,18 +117,6 @@ void PacketFilter::packetCounter(Packet::Ptr ptr)
 {
     auto dip = ptr->getRawDestIp();
     auto sip = ptr->getRawSourceIp();
-
-    //check if ips are there
-    //to ensure proper initilization
-    if (_packetIP.find(dip) == _packetIP.end())
-    {
-        _packetIP[dip] = 0;
-    }
-
-    if (_packetIP.find(sip) == _packetIP.end())
-    {
-        _packetIP[sip] = 0;
-    }
 
     _packetIP[dip] += 1;
     _packetIP[sip] += 1;
@@ -112,8 +135,8 @@ void PacketFilter::print()
     for (auto &it : _packetIP)
     {
         in_addr ip;
-        ip.s_addr = it.first;
-        cout << inet_ntoa(ip) << ": " << it.second << endl;
+        ip.s_addr = htonl(it.first);
+        cout << inet_ntoa(ip) << ": " << it.second.count << endl;
     }
 }
 

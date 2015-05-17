@@ -50,6 +50,8 @@ int NetSniffer::main(const std::vector<std::string> &args)
 
         _packetQueue.wakeUpAll();
 
+        ThreadPool::defaultPool().joinAll();
+
     }catch (exception &e){
         cerr << e.what() << endl;
     }

@@ -81,6 +81,7 @@ void Storer::run()
     auto &app = static_cast<NetSniffer&>(NetSniffer::instance());
     auto &queue = app.getStorePacketQueue();
     NetSniffer::setThreadName("Storer");
+    fstream file;
     try
     {
 
@@ -89,7 +90,7 @@ void Storer::run()
             throw RuntimeException("could open/create the capture file");
         }
 
-        fstream file(_pcapFile, fstream::app | fstream::binary);
+        file.open(_pcapFile, fstream::app | fstream::binary);
 
         if (!file.is_open())
         {
@@ -104,8 +105,7 @@ void Storer::run()
             if (tmp)
             {
                 Packet::Ptr packet = static_cast<Packet*>(tmp);
-                packet->writePacket(writer);
-                file.flush();
+                packet->writePacket(writer);                
             }
         }
     }
@@ -114,5 +114,6 @@ void Storer::run()
         app.logger().fatal(e.what());
     }
 
+    file.flush();
 }
 
