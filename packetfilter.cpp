@@ -60,12 +60,24 @@ void PacketFilter::getFilters()
         for (pair<const std::string, Var> &it : ret)
         {
             Filter filter(it.first, it.second.extract<Object::Ptr>());
-            _filters.push_back(filter);
+            Stats st;
+            _filters[filter] = st;
         }
 
-    } else
-    {
+    }
 
+    auto gen = config.getBool("generalStats", true);
+
+    if (gen)
+    {
+        Filter ft("general");
+        Stats st;
+        _filters[ft] = st;
+    }
+
+    if (!_filters.size())
+    {
+        throw RuntimeException("you should a lest allow a genral filter for colletin stats");
     }
 }
 
@@ -83,33 +95,16 @@ void PacketFilter::run()
             if (tmp){
                 Packet::Ptr ptr(static_cast<Packet*>(tmp));
 
-                switch (ptr->getProtocol()) //Check the Protocol and do accordingly...
+                for (auto &it : _filters)
                 {
-                case ICMP:  //ICMP Protocol
-                    ++_icmp;
-                    break;
-
-                case IGMP:  //IGMP Protocol
-                    ++_igmp;
-                    break;
-
-                case TCP:  //TCP Protocol
-                    ++_tcp;
-                    break;
-
-                case UDP: //UDP Protocol
-                    ++_udp;
-                    break;
-
-                default: //Some Other Protocol like ARP etc.
-                    ++_other;
-                    break;
+                    if (it.first.filter(ptr))
+                    {
+                        it.second.count(ptr);
+                        it.second.print(cout);
+                        break;
+                    }
                 }
-
-                packetCounter(ptr);
             }
-            //for testing porpos
-            print();
         }
 
     }

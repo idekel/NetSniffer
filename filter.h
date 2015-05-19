@@ -15,21 +15,34 @@ public:
 
     ~Filter();
 
-    Poco::UInt32 getMask(Poco::UInt32 bits)
+    bool isInRange(Poco::UInt32 ip) const
     {
-        return ~(~UInt32(0) >> bits);
+        return (ip & _netmask) == (_range & _netmask);
+    }
+
+    Poco::UInt32 getMask(Poco::UInt32 bits) const
+    {
+        return ~(~Poco::UInt32(0) >> bits);
+    }
+
+    bool filter(Packet::Ptr ptr) const;
+
+    bool operator <(const Filter &one) const
+    {
+        return _filtername < one._filtername;
     }
 
 private:
     Stats _stats;
     bool _hasfilter;
+    std::string _filtername;
     Poco::UInt32 _netmask;
     Poco::UInt32 _range;
-    std::string _filtername;
     Poco::UInt16 _minPort;
     Poco::UInt16 _maxPort;
 
     std::vector<Poco::UInt8> _protocols;
+    std::vector<Poco::UInt16> _ports;
 };
 
 #endif // FILTER_H

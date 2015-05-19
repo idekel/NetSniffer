@@ -10,6 +10,7 @@
 
 #include "packet.h"
 #include "filter.h"
+#include "stats.h"
 
 
 class PacketFilter : public Poco::Runnable
@@ -35,9 +36,9 @@ public:
 
 private:
     static long _tcp, _udp, _icmp, _igmp, _other;
-    std::map<Poco::Int64, Stats::Counter> _packetIP;
+    std::map<Poco::Int64, Stats::Counter> _packetIP;        
 
-    std::vector<Filter> _filters;
+    std::map<Filter, Stats> _filters;
 
 };
 

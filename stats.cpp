@@ -1,6 +1,9 @@
 #include "stats.h"
 #include "packetfilter.h"
 
+#include <arpa/inet.h>
+
+using namespace std;
 using namespace Poco;
 
 Stats::Stats()
@@ -70,4 +73,19 @@ void Stats::Conversation::counter(Packet::Ptr ptr)
 
     count += ptr->getPacketSize();
 
+}
+
+
+Stats &Stats::print(ostream &os)
+{
+    os << "\033[2J";
+    for (auto &it : _conversations)
+    {
+        os << Packet::fromRawIP(it.second.source)
+           << " >>> "
+           << Packet::fromRawIP(it.second.dest)
+           << ": " << it.second.count << "\n";
+    }
+    os.flush();
+    return *this;
 }

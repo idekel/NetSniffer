@@ -25,6 +25,28 @@ Packet::Packet(byte *buffer, int sz, Timestamp::TimeVal t)
     init(buffer);
 }
 
+const Timestamp& Packet::getTime()
+{
+    return _time;
+}
+
+Poco::UInt32 Packet::toRawIP(const string &ip)
+{
+    in_addr add;
+
+    memset(&add, 0, sizeof(in_addr));
+
+    inet_aton(ip.c_str(), &add);
+
+    return ntohl(add.s_addr);
+}
+
+string Packet::fromRawIP(UInt32 ip)
+{
+    in_addr add;
+    add.s_addr = htonl(ip);
+    return inet_ntoa(add);
+}
 
 void Packet::init(byte *buffer)
 {

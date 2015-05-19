@@ -111,6 +111,20 @@ public:
 
     virtual Poco::BinaryWriter& writePacket(Poco::BinaryWriter &os);
 
+
+    /**
+     * @brief getTime capture packet time
+     * @return
+     */
+    const Poco::Timestamp& getTime();
+
+    /**
+     * @brief toRawIP raw ip in host byte order.
+     * @return
+     */
+    static Poco::UInt32 toRawIP(const std::string &ip);
+    static std::string fromRawIP(Poco::UInt32 ip);
+
     //Packet::Ptr readPacket();
 
 protected:

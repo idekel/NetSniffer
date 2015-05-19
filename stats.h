@@ -2,6 +2,7 @@
 #define STATS_H
 
 #include <map>
+#include <iostream>
 
 #include <Poco/Types.h>
 
@@ -56,10 +57,12 @@ public:
         Poco::Int64 count;
     };
 
+    Stats& print(std::ostream& os);
+
 private:
     std::map<Poco::UInt64, Conversation> _conversations;
-    std::map<Poco::Int32, Counter> _ports;
-    std::map<Poco::Int8, Counter> _protocols;
+    std::map<Poco::UInt32, Counter> _ports;
+    std::map<Poco::UInt8, Counter> _protocols;
     std::map<Poco::UInt32, Counter> _talkers;
     std::map<Poco::UInt32, Counter> _listeners;
 };
