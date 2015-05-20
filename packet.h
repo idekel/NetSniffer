@@ -109,7 +109,7 @@ public:
      */
     Poco::UInt32 getRawSourceIp() const;
 
-    virtual Poco::BinaryWriter& writePacket(Poco::BinaryWriter &os);
+    virtual Poco::BinaryWriter& writePacket(Poco::BinaryWriter &os, int incl_len);
 
 
     /**

@@ -6,7 +6,7 @@
 using namespace std;
 using namespace Poco;
 
-Stats::Stats()
+Stats::Stats() : _allData(0)
 {
 
 }
@@ -20,6 +20,8 @@ Stats::~Stats()
 
 Stats& Stats::count(Packet::Ptr ptr)
 {
+    setTransfRate(ptr);
+
     UInt32 dip = ptr->getRawDestIp();
     UInt32 sip = ptr->getRawSourceIp();
 
@@ -42,8 +44,25 @@ Stats& Stats::count(Packet::Ptr ptr)
         count(static_cast<UDPPacket*>(ptr.get()));
     }
 
+    _listeners[dip] += psize;
+    _talkers[sip] += psize;
+
 }
 
+
+void Stats::setTransfRate(Packet::Ptr ptr)
+{
+    auto &t = ptr->getTime();
+    if (_time.epochTime() != t.epochTime())
+    {
+        _time = t;
+        _rate = _allData;
+        _allData = ptr->getPacketSize();
+    }else
+    {
+       _allData += ptr->getPacketSize();
+    }
+}
 
 void Stats::count(TCPPacket *ptr)
 {
@@ -79,6 +98,8 @@ void Stats::Conversation::counter(Packet::Ptr ptr)
 Stats &Stats::print(ostream &os)
 {
     os << "\033[2J";
+    if (_rate)
+        os << "rate: " << _rate / 1024 << " kbps\n";
     for (auto &it : _conversations)
     {
         os << Packet::fromRawIP(it.second.source)

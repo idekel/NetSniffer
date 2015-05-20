@@ -121,20 +121,19 @@ string Packet::getDestMac() const
 }
 
 
-BinaryWriter &Packet::writePacket(BinaryWriter &os)
+BinaryWriter &Packet::writePacket(BinaryWriter &os, int incl_len)
 {
     PCapHd phd;
 
-    int bytes_tostore = 125;
     phd.ts_sec = _time.epochTime();
     UInt32 usec = _time.epochMicroseconds() - (phd.ts_sec * 1000000);
     phd.ts_usec = usec;
-    phd.incl_len = bytes_tostore;
+    phd.incl_len = incl_len;
     phd.orig_len = getPacketSize();
 
     phd.write(os);
 
-    os.writeRaw((char*)_buffer, bytes_tostore);
+    os.writeRaw((char*)_buffer, incl_len);
 
     os.flush();
 

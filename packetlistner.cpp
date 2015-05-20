@@ -9,7 +9,8 @@ using namespace Poco;
 
 int PacketListner::BUFSIZE = 65536;
 
-PacketListner::PacketListner() : _buffer(new byte[BUFSIZE])
+PacketListner::PacketListner() : _buffer(new byte[BUFSIZE]),
+    _running(false)
 {
 
 }
@@ -34,13 +35,14 @@ void PacketListner::run()
                                      SO_BINDTODEVICE,
                                      de.c_str(),
                                      de.length()+1);
+        _running = true;
         while (!app.stop())
         {
             int sz = _socket.impl()->receiveBytes(_buffer, BUFSIZE);
             if (sz){
                 auto work = getPacket(_buffer, sz);
-                if (work->getDestIP() == "127.0.0.1")
-                    continue;
+                //if (work->getDestIP() == "127.0.0.1")
+                //    continue;
                 queue.enqueueNotification(work);
                 storeQueue.enqueueNotification(work);
             }
@@ -56,6 +58,8 @@ void PacketListner::run()
     catch (exception &e) {
         app.logger().fatal(e.what());
     }
+
+    _running = false;
 }
 
 

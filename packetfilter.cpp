@@ -66,16 +66,14 @@ void PacketFilter::getFilters()
 
     }
 
-    auto gen = config.getBool("generalStats", true);
+    _allowGen = config.getBool("generalStats", true);
 
-    if (gen)
+    if (_allowGen)
     {
-        Filter ft("general");
-        Stats st;
-        _filters[ft] = st;
+        _general.reset(new Stats);
     }
 
-    if (!_filters.size())
+    if (!_filters.size() && !_allowGen)
     {
         throw RuntimeException("you should a lest allow a genral filter for colletin stats");
     }
@@ -95,12 +93,19 @@ void PacketFilter::run()
             if (tmp){
                 Packet::Ptr ptr(static_cast<Packet*>(tmp));
 
+                if (_allowGen)
+                {
+                    if (ptr->getTime() != _general->getTime())
+                        _general->print(cout);
+                    _general->count(ptr);
+                }
                 for (auto &it : _filters)
                 {
                     if (it.first.filter(ptr))
                     {
-                        it.second.count(ptr);
-                        it.second.print(cout);
+                        if (ptr->getTime() != it.second.getTime())
+                            it.second.print(cout);
+                        it.second.count(ptr);                        
                         break;
                     }
                 }

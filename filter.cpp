@@ -89,17 +89,17 @@ bool Filter::filter(Packet::Ptr ptr) const
     {
         if (_range && _netmask)
         {
-            if (isInRange(ptr->getRawDestIp())
-                    && isInRange(ptr->getRawSourceIp()))
-                return true;
+            if (!isInRange(ptr->getRawDestIp())
+                    && !isInRange(ptr->getRawSourceIp()))
+                return false;
         }
 
         auto protocol = ptr->getProtocol();
         if (_protocols.size())
         {
             if (find(_protocols.begin(), _protocols.end(), protocol)
-                    != _protocols.end())
-                return true;
+                    == _protocols.end())
+                return false;
         }
         if (_ports.size())
         {
@@ -109,17 +109,17 @@ bool Filter::filter(Packet::Ptr ptr) const
                 if (find(_ports.begin(),
                          _ports.end(),
                          tcp->getSourcePort())
-                        != _ports.end())
+                        == _ports.end())
                 {
-                    return true;
+                    return false;
                 }
 
                 if (find(_ports.begin(),
                          _ports.end(),
                          tcp->getDestPort())
-                        != _ports.end())
+                        == _ports.end())
                 {
-                    return true;
+                    return false;
                 }
             }
 
@@ -129,23 +129,23 @@ bool Filter::filter(Packet::Ptr ptr) const
                 if (find(_ports.begin(),
                          _ports.end(),
                          udp->getSourcePort())
-                        != _ports.end())
+                        == _ports.end())
                 {
-                    return true;
+                    return false;
                 }
 
                 if (find(_ports.begin(),
                          _ports.end(),
                          udp->getDestPort())
-                        != _ports.end())
+                        == _ports.end())
                 {
-                    return true;
+                    return false;
                 }
             }
         }
 
 
-        return false;
+        return true;
     }
 
     return true;

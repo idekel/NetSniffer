@@ -1,7 +1,8 @@
 #include "netsniffer.h"
 #include "packetfilter.h"
-#include "packetlistner.h"
 #include "storer.h"
+
+#include <signal.h>
 
 #include <fstream>
 
@@ -22,6 +23,15 @@ NetSniffer::~NetSniffer()
 
 }
 
+static void restartListener(int sig)
+{
+    if (sig == SIGUSR1)
+    {
+        auto &app = static_cast<NetSniffer&>(NetSniffer::instance());
+        app.startListener();
+    }
+}
+
 
 void NetSniffer::initialize(Poco::Util::Application &self)
 {
@@ -30,19 +40,45 @@ void NetSniffer::initialize(Poco::Util::Application &self)
 }
 
 
+void NetSniffer::startListener()
+{
+    if (!_listener)
+    {
+        _listener.reset(new PacketListner);
+
+    } else if (!_listener->isRunning())
+    {
+        _listener.reset(new PacketListner);
+
+    } else
+    {
+        return;
+    }
+
+    //logger().information("restaring listener");
+
+    ThreadPool::defaultPool().start(*_listener, "Packet Listener");
+}
+
 int NetSniffer::main(const std::vector<std::string> &args)
 {
 
     try {
 
         Storer store;
-
-        PacketListner listener;
         PacketFilter filter;
-
-        ThreadPool::defaultPool().start(listener, "Packet Listener");
         ThreadPool::defaultPool().start(filter, "Packet Filter");
         ThreadPool::defaultPool().start(store, "Storer");
+
+        startListener();
+
+        //if some error cause the listener to stop
+        //it can be restarted with SIGUSR1
+        struct sigaction new_action;
+        new_action.sa_handler = restartListener;
+        sigemptyset (&new_action.sa_mask);
+        new_action.sa_flags = 0;
+        sigaction (SIGUSR1, &new_action, NULL);
 
         waitForTerminationRequest();
 

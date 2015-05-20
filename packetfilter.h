@@ -37,7 +37,8 @@ public:
 private:
     static long _tcp, _udp, _icmp, _igmp, _other;
     std::map<Poco::Int64, Stats::Counter> _packetIP;        
-
+    bool _allowGen;
+    std::unique_ptr<Stats> _general;
     std::map<Filter, Stats> _filters;
 
 };

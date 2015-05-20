@@ -14,12 +14,18 @@ public:
 
     void run() override;
 
+    bool isRunning()
+    {
+        return _running;
+    }
+
     Packet::Ptr getPacket(byte *buf, int sz);
 
     static int BUFSIZE;
 
 private:
     byte *_buffer;
+    bool _running;
     RawSocket _socket;
 
 };

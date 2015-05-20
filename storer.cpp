@@ -81,6 +81,7 @@ void Storer::run()
     auto &queue = app.getStorePacketQueue();
     NetSniffer::setThreadName("Storer");
     fstream file;
+    int incl_len = _config.getInt("incl_len");
     try
     {
 
@@ -104,7 +105,7 @@ void Storer::run()
             if (tmp)
             {
                 Packet::Ptr packet = static_cast<Packet*>(tmp);
-                packet->writePacket(writer);                
+                packet->writePacket(writer, incl_len);
             }
         }
     }

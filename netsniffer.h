@@ -1,8 +1,12 @@
 #ifndef NETSNIFFER_H
 #define NETSNIFFER_H
 
+#include <memory>
+
 #include <Poco/Util/ServerApplication.h>
 #include <Poco/NotificationQueue.h>
+
+#include "packetlistner.h"
 
 class NetSniffer : public Poco::Util::ServerApplication
 {
@@ -19,11 +23,15 @@ public:
     Poco::NotificationQueue& getPacketQueue();
     Poco::NotificationQueue& getStorePacketQueue();
 
-    //for cool thread name
+    //for a cool thread name on linux
     static void setThreadName(const std::string &name);
+
+    //start to catch packets
+    void startListener();
 
 private:
     Poco::NotificationQueue _packetQueue, _storePacket;
+    std::shared_ptr<PacketListner> _listener;
     bool _stop;
 };
 

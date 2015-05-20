@@ -20,6 +20,11 @@ public:
     void count(TCPPacket *ptr);
     void count(UDPPacket *ptr);
 
+    const Poco::Timestamp& getTime() const
+    {
+        return _time;
+    }
+
     struct Conversation
     {
         Conversation()
@@ -59,12 +64,18 @@ public:
 
     Stats& print(std::ostream& os);
 
+    void setTransfRate(Packet::Ptr ptr);
+
 private:
     std::map<Poco::UInt64, Conversation> _conversations;
     std::map<Poco::UInt32, Counter> _ports;
     std::map<Poco::UInt8, Counter> _protocols;
     std::map<Poco::UInt32, Counter> _talkers;
     std::map<Poco::UInt32, Counter> _listeners;
+
+    float _rate;
+    Poco::UInt64 _allData;
+    Poco::Timestamp _time;
 };
 
 #endif // STATS_H
