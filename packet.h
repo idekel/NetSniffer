@@ -98,6 +98,12 @@ public:
     virtual std::string getDestIP() const;
 
     /**
+     * @brief setOriginalSize for use when reading packets
+     * @param sz
+     */
+    virtual void setOriginalSize(int sz);
+
+    /**
      * @brief getRawDestIp raw ip in host byte order.
      * @return
      */
@@ -130,6 +136,7 @@ public:
 protected:
     unsigned char *_buffer;
     int _size;
+    int _originalSize;
     ethhdr *_eth;
     iphdr *_iph;
     std::string _sip, _dip;

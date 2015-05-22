@@ -3,8 +3,11 @@
 
 #include <arpa/inet.h>
 
+#include <Poco/JSON/Array.h>
+
 using namespace std;
 using namespace Poco;
+using namespace JSON;
 
 Stats::Stats() : _allData(0)
 {
@@ -92,6 +95,70 @@ void Stats::Conversation::counter(Packet::Ptr ptr)
 
     count += ptr->getPacketSize();
 
+}
+
+Object::Ptr Stats::toJson()
+{
+    Object::Ptr obj(new Object);
+    Array convs, talkers, listener, ports, protocols;
+    for (auto &con : _conversations)
+    {
+        convs.add(con.second.toJson());
+    }
+
+    obj->set("conversations", convs);
+
+    for (auto &tk : _talkers)
+    {
+        Object tmp;
+        tmp.set("ip", Packet::fromRawIP(tk.first));
+        tmp.set("count", tk.second.count);
+        talkers.add(tmp);
+    }
+
+    obj->set("talkers", talkers);
+
+    for (auto &pts : _ports)
+    {
+        Object tmp;
+        tmp.set("port", pts.first);
+        tmp.set("count", pts.second);
+        ports.add(tmp);
+    }
+
+    obj->set("ports", ports);
+
+    for (auto &lrs : _listeners)
+    {
+        Object tmp;
+        tmp.set("ip", Packet::fromRawIP(lrs.first));
+        tmp.set("count", lrs.second.count);
+        listener.add(tmp);
+    }
+
+    obj->set("listeners", listener);
+
+    for (auto &pls : _protocols)
+    {
+        Object tmp;
+        tmp.set("protocol", pls.first);
+        tmp.set("count", pls.second);
+        protocols.add(tmp);
+    }
+
+    obj->set("protocols", protocols);
+
+    return obj;
+}
+
+
+Object Stats::Conversation::toJson()
+{
+    Object obj;
+    obj.set("source", Packet::fromRawIP(source));
+    obj.set("dest", Packet::fromRawIP(dest));
+    obj.set("count", count);
+    return obj;
 }
 
 

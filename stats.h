@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <Poco/Types.h>
+#include <Poco/JSON/Object.h>
 
 #include "tcppacket.h"
 #include "udppacket.h"
@@ -39,6 +40,8 @@ public:
         Poco::UInt32 source;
         Poco::UInt32 dest;
         Poco::UInt64 count;
+
+        Poco::JSON::Object toJson();
     };
 
     struct Counter
@@ -63,6 +66,7 @@ public:
     };
 
     Stats& print(std::ostream& os);
+    Poco::JSON::Object::Ptr toJson();
 
     void setTransfRate(Packet::Ptr ptr);
 

@@ -12,7 +12,7 @@ using namespace std;
 using namespace Poco;
 using namespace JSON;
 
-Packet::Packet(byte *buffer, int sz) : _size(sz)
+Packet::Packet(byte *buffer, int sz) : _size(sz), _originalSize(0)
 {
     init(buffer);
 }
@@ -20,6 +20,7 @@ Packet::Packet(byte *buffer, int sz) : _size(sz)
 
 Packet::Packet(byte *buffer, int sz, Timestamp::TimeVal t)
     : _size(sz),
+      _originalSize(0),
       _time(t)
 {
     init(buffer);
@@ -28,6 +29,11 @@ Packet::Packet(byte *buffer, int sz, Timestamp::TimeVal t)
 const Timestamp& Packet::getTime()
 {
     return _time;
+}
+
+void Packet::setOriginalSize(int sz)
+{
+    _originalSize = sz;
 }
 
 Poco::UInt32 Packet::toRawIP(const string &ip)
@@ -75,6 +81,9 @@ void Packet::init(byte *buffer)
 
 int Packet::getPacketSize() const
 {
+    if (_originalSize)
+        return _originalSize;
+
     return _size;
 }
 
